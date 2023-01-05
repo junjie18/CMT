@@ -1,10 +1,12 @@
 
 # Cross Modal Transformer via Coordinates Encoding for 3D Object Dectection
-[![arXiv](https://img.shields.io/badge/arXiv-Paper-<COLOR>.svg)]()
+[![arXiv](https://img.shields.io/badge/arXiv-Paper-<COLOR>.svg)](https://arxiv.org/pdf/2301.01283.pdf)
 ![visitors](https://visitor-badge.glitch.me/badge?page_id=junjie18/CMT)
 <!-- ## Introduction -->
 
-This repository is an official implementation of CMT.
+https://user-images.githubusercontent.com/18145538/210828888-a944817a-858f-45ef-8abc-068adeda413f.mp4
+
+This repository is an official implementation of [CMT](https://arxiv.org/pdf/2301.01283.pdf).
 
 <div align="center">
   <img src="figs/overview.png"/>
