@@ -34,6 +34,16 @@ We provide some results on nuScenes **val set**. The default batch size is 2 on 
 | CMT-voxel0100-r50-800x320 | 60.1%     | 63.4%    | 8 x 2080ti | 20 epoch| 14 hours   |    
 | CMT-voxel0075-vov-1600x640  | 69.4%     | 71.9%    | 8 x A100 | 15e+5e(with cbgs) | 45 hours  |    
 
+## Citation
+If you find CMT helpful in your research, please consider citing: 
+```bibtex   
+@article{yan2023cross,
+  title={Cross Modal Transformer via Coordinates Encoding for 3D Object Dectection},
+  author={Yan, Junjie and Liu, Yingfei and Sun, Jianjian and Jia, Fan and Li, Shuailin and Wang, Tiancai and Zhang, Xiangyu},
+  journal={arXiv preprint arXiv:2301.01283},
+  year={2023}
+}
+```
 
 ## Contact
 If you have any questions, feel free to open an issue or contact us at yanjunjie@megvii.com, liuyingfei@megvii.com, sunjianjian@megvii.com or wangtiancai@megvii.com.
