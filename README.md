@@ -12,7 +12,7 @@ This repository is an official implementation of [CMT](https://arxiv.org/pdf/230
   <img src="figs/overview.png"/>
 </div><br/>
 
-CMT is a robust 3D detector for end-to-end 3D multi-modal detection. A DETR-like framework is designed for multi-modal detection(CMT) and lidar-only detection(CMT-L), which obtains 73.0% and 70.1% NDS separately on nuScenes benchmark.
+CMT is a robust 3D detector for end-to-end 3D multi-modal detection. A DETR-like framework is designed for multi-modal detection(CMT) and lidar-only detection(CMT-L), which obtains **73.5%** and **70.1%** NDS separately on nuScenes benchmark.
 Without explicit view transformation, CMT takes the image and point clouds tokens as inputs and directly outputs accurate 3D bounding boxes. CMT can be a strong baseline for further research.
 
 
