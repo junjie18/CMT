@@ -19,7 +19,7 @@ Without explicit view transformation, CMT takes the image and point clouds token
 
 
 <div align="center">
-  <img src="figs/cmt_fps.png" width="350" />
+  <img src="figs/cmt_fps.png" width="700" />
 
   <em> Performance comparison between CMT and existing methods. All speed statistics are measured on a single
 Tesla A100 GPU using the best model of official repositories.  </em>
