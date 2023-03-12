@@ -8,15 +8,15 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # ------------------------------------------------------------------------
 
+import pickle
+from os import path as osp
+
 import mmcv
 import numpy as np
-import pickle
-import argparse
-import os
-import importlib
-
 from mmcv import track_iter_progress
-from os import path as osp
+from mmcv.ops import roi_align
+from pycocotools import mask as maskUtils
+from pycocotools.coco import COCO
 
 from mmdet3d.core.bbox import box_np_ops as box_np_ops
 from mmdet3d.datasets import build_dataset
@@ -27,35 +27,42 @@ def create_groundtruth_database(dataset_class_name,
                                 data_path,
                                 info_prefix,
                                 info_path=None,
+                                mask_anno_path=None,
                                 used_classes=None,
                                 database_save_path=None,
                                 db_info_save_path=None,
+                                relative_path=True,
+                                add_rgb=False,
+                                lidar_only=False,
+                                bev_only=False,
+                                coors_range=None,
                                 with_mask=False):
     """Given the raw data, generate the ground truth database.
 
     Args:
-        dataset_class_name （str): Name of the input dataset.
+        dataset_class_name (str): Name of the input dataset.
         data_path (str): Path of the data.
         info_prefix (str): Prefix of the info file.
-        info_path (str): Path of the info file.
+        info_path (str, optional): Path of the info file.
             Default: None.
-        mask_anno_path (str): Path of the mask_anno.
+        mask_anno_path (str, optional): Path of the mask_anno.
             Default: None.
-        used_classes (list[str]): Classes have been used.
+        used_classes (list[str], optional): Classes have been used.
             Default: None.
-        database_save_path (str): Path to save database.
+        database_save_path (str, optional): Path to save database.
             Default: None.
-        db_info_save_path (str): Path to save db_info.
+        db_info_save_path (str, optional): Path to save db_info.
             Default: None.
-        relative_path (bool): Whether to use relative path.
+        relative_path (bool, optional): Whether to use relative path.
             Default: True.
-        with_mask (bool): Whether to use mask.
+        with_mask (bool, optional): Whether to use mask.
             Default: False.
     """
     print(f'Create GT Database of {dataset_class_name}')
     dataset_cfg = dict(
         type=dataset_class_name, data_root=data_path, ann_file=info_path, return_gt_info=True)
-    if dataset_class_name == 'NuScenesSweepDataset':
+
+    if dataset_class_name == 'CustomNuScenesDataset':
         dataset_cfg.update(
             use_valid_flag=True,
             pipeline=[
@@ -83,6 +90,7 @@ def create_groundtruth_database(dataset_class_name,
     if db_info_save_path is None:
         db_info_save_path = osp.join(data_path,
                                      f'{info_prefix}_dbinfos_train.pkl')
+
     database_pts_path = osp.join(database_save_path, 'pts_dir')
     database_img_path = osp.join(database_save_path, 'img_dir')
     mmcv.mkdir_or_exist(database_save_path)
@@ -92,7 +100,6 @@ def create_groundtruth_database(dataset_class_name,
 
     group_counter = 0
     for j in track_iter_progress(list(range(len(dataset)))):
-
         input_dict = dataset.get_data_info(j)
         dataset.pre_pipeline(input_dict)
         example = dataset.pipeline(input_dict)
@@ -138,7 +145,7 @@ def create_groundtruth_database(dataset_class_name,
                 'lidar2img': lidar2img_rt,              
                 'lidar2cam': lidar2cam_rt,
                 'cam_intrinsic': viewpad}
-        
+
         for i in range(num_obj):
             pts_filename = f'{image_idx}_{names[i]}_{i}.bin'
             img_filename = f'{image_idx}_{names[i]}_{i}.png'
@@ -222,51 +229,3 @@ def find_img_crop(gt_boxes_3d, input_img, input_info,  points):
             crop_depth = avg_depth
     
     return max_crop, crop_key, crop_depth
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Data converter arg parser')
-    parser.add_argument(
-        '--dataset',
-        type=str,
-        default='NuScenesSweepDataset',
-        required=False,
-        help='specify dataset name')
-    parser.add_argument(
-        '--root-path',
-        type=str,
-        default='./data/nuscenes',
-        help='specify the root path of dataset')
-    parser.add_argument(
-        '--version',
-        type=str,
-        default='v1.0',
-        required=False,
-        help='specify the dataset version, no need for kitti')
-    parser.add_argument(
-        '--out-dir',
-        type=str,
-        default='./data/nuscenes',
-        required=False,
-        help='output data dir')
-    parser.add_argument(
-        '--info-path',
-        type=str,
-        default='./data/nuscenes/nuscenes_img_pro_infos_train.pkl',
-        required=False,
-        help='name of info pkl')
-    parser.add_argument('--extra-tag', type=str, default='nuscenes_unified')
-    args = parser.parse_args()
-
-    plugin_dir = 'projects/mmdet3d_plugin/'
-    _module_dir = os.path.dirname(plugin_dir)
-    _module_dir = _module_dir.split('/')
-    _module_path = _module_dir[0]
-
-    for m in _module_dir[1:]:
-        _module_path = _module_path + '.' + m
-    print(_module_path)
-    plg_lib = importlib.import_module(_module_path)
-
-    create_groundtruth_database(args.dataset, args.root_path, args.extra_tag,
-                                args.info_path)

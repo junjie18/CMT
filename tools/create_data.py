@@ -1,9 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
-from os import path as osp
+import os.path as osp
 
-from data_converter import nuscenes_converter as nuscenes_converter
-from data_converter.create_unified_gt_database import create_groundtruth_database
+from data_converter import nuscenes_converter
+from data_converter.create_gt_database import create_groundtruth_database
 
 
 def nuscenes_data_prep(root_path,
@@ -23,7 +23,8 @@ def nuscenes_data_prep(root_path,
         version (str): Dataset version.
         dataset_name (str): The dataset class name.
         out_dir (str): Output directory of the groundtruth database info.
-        max_sweeps (int): Number of input consecutive frames. Default: 10
+        max_sweeps (int, optional): Number of input consecutive frames.
+            Default: 10
     """
     nuscenes_converter.create_nuscenes_infos(
         root_path, info_prefix, version=version, max_sweeps=max_sweeps)
@@ -45,18 +46,18 @@ def nuscenes_data_prep(root_path,
 
 
 parser = argparse.ArgumentParser(description='Data converter arg parser')
-parser.add_argument('dataset', metavar='nuscenes', help='name of the dataset')
+parser.add_argument('dataset', metavar='kitti', help='name of the dataset')
 parser.add_argument(
     '--root-path',
     type=str,
-    default='./data/nuscenes',
+    default='./data/kitti',
     help='specify the root path of dataset')
 parser.add_argument(
     '--version',
     type=str,
     default='v1.0',
     required=False,
-    help='specify the dataset version, no need for nuscenes')
+    help='specify the dataset version, no need for kitti')
 parser.add_argument(
     '--max-sweeps',
     type=int,
@@ -64,24 +65,37 @@ parser.add_argument(
     required=False,
     help='specify sweeps of lidar per example')
 parser.add_argument(
+    '--with-plane',
+    action='store_true',
+    help='Whether to use plane information for kitti.')
+parser.add_argument(
+    '--num-points',
+    type=int,
+    default=-1,
+    help='Number of points to sample for indoor datasets.')
+parser.add_argument(
     '--out-dir',
     type=str,
-    default='./data/nuscenes',
-    required='False',
+    default='./data/kitti',
+    required=False,
     help='name of info pkl')
-parser.add_argument('--extra-tag', type=str, default='nuscenes')
+parser.add_argument('--extra-tag', type=str, default='kitti')
 parser.add_argument(
     '--workers', type=int, default=4, help='number of threads to be used')
 args = parser.parse_args()
 
+
 if __name__ == '__main__':
+    import importlib
+    importlib.import_module('projects.mmdet3d_plugin')
+
     if args.dataset == 'nuscenes' and args.version != 'v1.0-mini':
         train_version = f'{args.version}-trainval'
         nuscenes_data_prep(
             root_path=args.root_path,
             info_prefix=args.extra_tag,
             version=train_version,
-            dataset_name='NuScenesSweepDataset',
+            dataset_name='CustomNuScenesDataset',
             out_dir=args.out_dir,
             max_sweeps=args.max_sweeps)
         test_version = f'{args.version}-test'
@@ -89,7 +103,7 @@ if __name__ == '__main__':
             root_path=args.root_path,
             info_prefix=args.extra_tag,
             version=test_version,
-            dataset_name='NuScenesSweepDataset',
+            dataset_name='CustomNuScenesDataset',
             out_dir=args.out_dir,
             max_sweeps=args.max_sweeps)
     elif args.dataset == 'nuscenes' and args.version == 'v1.0-mini':
@@ -98,6 +112,6 @@ if __name__ == '__main__':
             root_path=args.root_path,
             info_prefix=args.extra_tag,
             version=train_version,
-            dataset_name='NuScenesSweepDataset',
+            dataset_name='CustomNuScenesDataset',
             out_dir=args.out_dir,
             max_sweeps=args.max_sweeps)

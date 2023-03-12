@@ -1,17 +1,18 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import mmcv
-import numpy as np
 import os
 from collections import OrderedDict
-from nuscenes.nuscenes import NuScenes
-from nuscenes.utils.geometry_utils import view_points
 from os import path as osp
-from pyquaternion import Quaternion
-from shapely.geometry import MultiPoint, box
 from typing import List, Tuple, Union
 
-from mmdet3d.core.bbox.box_np_ops import points_cam2img
-from projects.mmdet3d_plugin.datasets import NuScenesSweepDataset
+import mmcv
+import numpy as np
+from nuscenes.nuscenes import NuScenes
+from nuscenes.utils.geometry_utils import view_points
+from pyquaternion import Quaternion
+from shapely.geometry import MultiPoint, box
+
+from mmdet3d.core.bbox import points_cam2img
+from projects.mmdet3d_plugin.datasets import CustomNuScenesDataset
 
 nus_categories = ('car', 'truck', 'trailer', 'bus', 'construction_vehicle',
                   'bicycle', 'motorcycle', 'pedestrian', 'traffic_cone',
@@ -34,10 +35,10 @@ def create_nuscenes_infos(root_path,
     Args:
         root_path (str): Path of the data root.
         info_prefix (str): Prefix of the info file to be generated.
-        version (str): Version of the data.
-            Default: 'v1.0-trainval'
-        max_sweeps (int): Max number of sweeps.
-            Default: 10
+        version (str, optional): Version of the data.
+            Default: 'v1.0-trainval'.
+        max_sweeps (int, optional): Max number of sweeps.
+            Default: 10.
     """
     from nuscenes.nuscenes import NuScenes
     nusc = NuScenes(version=version, dataroot=root_path, verbose=True)
@@ -47,6 +48,7 @@ def create_nuscenes_infos(root_path,
     if version == 'v1.0-trainval':
         train_scenes = splits.train
         val_scenes = splits.val
+
     elif version == 'v1.0-test':
         train_scenes = splits.test
         val_scenes = []
@@ -152,9 +154,9 @@ def _fill_trainval_infos(nusc,
         nusc (:obj:`NuScenes`): Dataset class in the nuScenes dataset.
         train_scenes (list[str]): Basic information of training scenes.
         val_scenes (list[str]): Basic information of validation scenes.
-        test (bool): Whether use the test mode. In the test mode, no
+        test (bool, optional): Whether use the test mode. In test mode, no
             annotations can be accessed. Default: False.
-        max_sweeps (int): Max number of sweeps. Default: 10.
+        max_sweeps (int, optional): Max number of sweeps. Default: 10.
 
     Returns:
         tuple[list[dict]]: Information of training set and validation set
@@ -221,30 +223,6 @@ def _fill_trainval_infos(nusc,
             else:
                 break
         info['sweeps'] = sweeps
-        
-        # obtain image sweeps for a single key-frame
-        info['cam_sweeps'] = {}
-        info['cam_sweeps_info'] = {}
-        for cam in camera_types:
-            cam_rec = nusc.get('sample_data', sample['data'][cam])
-            cam_sweeps = []
-            info_sweeps = []
-            # max sweep for camera is actually 6
-            while len(cam_sweeps) < max_sweeps:
-                if not cam_rec['prev'] == '':
-                    cam_token = cam_rec['token']
-                    cam_path, _, cam_intrinsic = nusc.get_sample_data(cam_token)
-                    cam_info = obtain_sensor2top(nusc, cam_token, l2e_t, l2e_r_mat,
-                                                 e2g_t, e2g_r_mat, cam)
-                    cam_info.update(cam_intrinsic=cam_intrinsic)
-                    cam_sweeps.append(cam_path)
-                    info_sweeps.append(cam_info)
-                    cam_rec = nusc.get('sample_data', cam_rec['prev'])
-                else:
-                    break
-            info['cam_sweeps'][cam] = cam_sweeps
-            info['cam_sweeps_info'][cam] = info_sweeps
-        
         # obtain annotation
         if not test:
             annotations = [
@@ -270,11 +248,13 @@ def _fill_trainval_infos(nusc,
 
             names = [b.name for b in boxes]
             for i in range(len(names)):
-                if names[i] in NuScenesSweepDataset.NameMapping:
-                    names[i] = NuScenesSweepDataset.NameMapping[names[i]]
+                if names[i] in CustomNuScenesDataset.NameMapping:
+                    names[i] = CustomNuScenesDataset.NameMapping[names[i]]
             names = np.array(names)
-            # we need to convert rot to SECOND format.
-            gt_boxes = np.concatenate([locs, dims, -rots - np.pi / 2], axis=1)
+            # we need to convert box size to
+            # the format of our lidar coordinate system
+            # which is x_size, y_size, z_size (corresponding to l, w, h)
+            gt_boxes = np.concatenate([locs, dims[:, [1, 0, 2]], rots], axis=1)
             assert len(gt_boxes) == len(
                 annotations), f'{len(gt_boxes)}, {len(annotations)}'
             info['gt_boxes'] = gt_boxes
@@ -313,7 +293,7 @@ def obtain_sensor2top(nusc,
         e2g_t (np.ndarray): Translation from ego to global in shape (1, 3).
         e2g_r_mat (np.ndarray): Rotation matrix from ego to global
             in shape (3, 3).
-        sensor_type (str): Sensor to calibrate. Default: 'lidar'.
+        sensor_type (str, optional): Sensor to calibrate. Default: 'lidar'.
 
     Returns:
         sweep (dict): Sweep information after transformation.
@@ -362,7 +342,8 @@ def export_2d_annotation(root_path, info_path, version, mono3d=True):
         root_path (str): Root path of the raw data.
         info_path (str): Path of the info file.
         version (str): Dataset version.
-        mono3d (bool): Whether to export mono3d annotation. Default: True.
+        mono3d (bool, optional): Whether to export mono3d annotation.
+            Default: True.
     """
     # get bbox annotations for camera
     camera_types = [
@@ -426,7 +407,7 @@ def get_2d_boxes(nusc,
     """Get the 2D annotation records for a given `sample_data_token`.
 
     Args:
-        sample_data_token (str): Sample data token belonging to a camera \
+        sample_data_token (str): Sample data token belonging to a camera
             keyframe.
         visibilities (list[str]): Visibility filter.
         mono3d (bool): Whether to get boxes with mono3d annotation.
@@ -586,7 +567,7 @@ def post_process_coords(
 
 def generate_record(ann_rec: dict, x1: float, y1: float, x2: float, y2: float,
                     sample_data_token: str, filename: str) -> OrderedDict:
-    """Generate one 2D annotation record given various informations on top of
+    """Generate one 2D annotation record given various information on top of
     the 2D bounding box coordinates.
 
     Args:
@@ -601,7 +582,7 @@ def generate_record(ann_rec: dict, x1: float, y1: float, x2: float, y2: float,
 
     Returns:
         dict: A sample 2D annotation record.
-            - file_name (str): flie name
+            - file_name (str): file name
             - image_id (str): sample data token
             - area (float): 2d box area
             - category_name (str): category name
@@ -637,9 +618,9 @@ def generate_record(ann_rec: dict, x1: float, y1: float, x2: float, y2: float,
     coco_rec['image_id'] = sample_data_token
     coco_rec['area'] = (y2 - y1) * (x2 - x1)
 
-    if repro_rec['category_name'] not in NuScenesSweepDataset.NameMapping:
+    if repro_rec['category_name'] not in CustomNuScenesDataset.NameMapping:
         return None
-    cat_name = NuScenesSweepDataset.NameMapping[repro_rec['category_name']]
+    cat_name = CustomNuScenesDataset.NameMapping[repro_rec['category_name']]
     coco_rec['category_name'] = cat_name
     coco_rec['category_id'] = nus_categories.index(cat_name)
     coco_rec['bbox'] = [x1, y1, x2 - x1, y2 - y1]

@@ -20,6 +20,10 @@ class CustomNuScenesDataset(NuScenesDataset):
     This datset only add camera intrinsics and extrinsics to the results.
     """
 
+    def __init__(self, *args, return_gt_info=False, **kwargs):
+        super(CustomNuScenesDataset, self).__init__(*args, **kwargs)
+        self.return_gt_info = return_gt_info
+
     def get_data_info(self, index):
         """Get data info according to the given index.
 
@@ -49,6 +53,9 @@ class CustomNuScenesDataset(NuScenesDataset):
             img_sweeps=None if 'img_sweeps' not in info else info['img_sweeps'],
             radar_info=None if 'radars' not in info else info['radars']
         )
+
+        if self.return_gt_info:
+            input_dict['info'] = info
 
         if self.modality['use_camera']:
             image_paths = []
