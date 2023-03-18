@@ -8,7 +8,7 @@ class_names = [
 ]
 voxel_size = [0.1, 0.1, 0.2]
 out_size_factor = 8
-evaluation = dict(interval=2)
+evaluation = dict(interval=20)
 dataset_type = 'CustomNuScenesDataset'
 data_root = 'data/nuscenes/'
 input_modality = dict(
@@ -168,7 +168,7 @@ data = dict(
         type=dataset_type,
         data_root=data_root,
         ann_file=data_root + '/nuscenes_infos_val.pkl',
-        load_interval=10,
+        load_interval=1,
         pipeline=test_pipeline,
         classes=class_names,
         modality=input_modality,
