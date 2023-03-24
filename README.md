@@ -26,7 +26,7 @@ CUDA == 11.1 \
 pytorch == 1.9.0 \
 mmdet3d == 1.0.0rc5 \
 spconv-cu111 == 2.1.21 \
-[flash-attn](https://github.com/HazyResearch/flash-attention)
+[flash-attn](https://github.com/HazyResearch/flash-attention) == 0.2.2
 
 * Data   
 Follow the [mmdet3d](https://github.com/open-mmlab/mmdetection3d/blob/master/docs/en/data_preparation.md) to process the nuScenes dataset.
