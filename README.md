@@ -24,6 +24,9 @@ Without explicit view transformation, CMT takes the image and point clouds token
 Python == 3.8 \
 CUDA == 11.1 \
 pytorch == 1.9.0 \
+mmcv-full == 1.6.0 \
+mmdet == 2.24.0 \
+mmsegmentation == 0.29.1 \
 mmdet3d == 1.0.0rc5 \
 spconv-cu111 == 2.1.21 \
 [flash-attn](https://github.com/HazyResearch/flash-attention) == 0.2.2
