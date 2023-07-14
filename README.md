@@ -1,5 +1,5 @@
 
-# Cross Modal Transformer: Towards Fast and Robust 3D Object Detection
+# [ICCV 2023] Cross Modal Transformer: Towards Fast and Robust 3D Object Detection
 [![arXiv](https://img.shields.io/badge/arXiv-Paper-<COLOR>.svg)](https://arxiv.org/pdf/2301.01283.pdf)
 ![visitors](https://visitor-badge.glitch.me/badge?page_id=junjie18/CMT)
 <!-- ## Introduction -->
