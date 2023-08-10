@@ -228,6 +228,7 @@ optimizer = dict(
     weight_decay=0.01)  # for 8gpu * 2sample_per_gpu
 optimizer_config = dict(
     type='CustomFp16OptimizerHook',
+    loss_scale='dynamic',
     grad_clip=dict(max_norm=35, norm_type=2),
 )
 
