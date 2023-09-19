@@ -1,18 +1,16 @@
 
 # [ICCV 2023] Cross Modal Transformer: Towards Fast and Robust 3D Object Detection
 [![arXiv](https://img.shields.io/badge/arXiv-Paper-<COLOR>.svg)](https://arxiv.org/pdf/2301.01283.pdf)
-![visitors](https://visitor-badge.glitch.me/badge?page_id=junjie18/CMT)
+
 <!-- ## Introduction -->
 
 https://user-images.githubusercontent.com/18145538/210828888-a944817a-858f-45ef-8abc-068adeda413f.mp4
 
-This repository is an official implementation of [CMT](https://arxiv.org/pdf/2301.01283.pdf).
-
 <div align="center">
-  <img src="figs/cmt_fps.png" width="550" />
+  <img src="figs/cmt_eva.png" width="900" />
 
-  <em> Performance comparison between CMT and existing methods. All speed statistics are measured on a single
-Tesla A100 GPU using the best model of official repositories.  </em>
+  <em> Performance comparison and Robustness under sensor failure. All statistics are measured on a single
+Tesla A100 GPU using the best model of official repositories. All models use [spconv](https://github.com/traveller59/spconv) Voxelization module. </em>
 </div><br/>
 
 CMT is a robust 3D detector for end-to-end 3D multi-modal detection. A DETR-like framework is designed for multi-modal detection(CMT) and lidar-only detection(CMT-L), which obtains **74.1%**(**SoTA without TTA/model ensemble**) and **70.1%** NDS separately on nuScenes benchmark.
@@ -53,7 +51,7 @@ Results on nuScenes **val set**. The default batch size is 2 on each GPU. The FP
 | [vov_1600x640](./projects/configs/camera/cmt_camera_vov_1600x640_cbgs.py) |C| 40.6% | 46.0%  | 20e | 8.4 |
 | [voxel0075](./projects/configs/lidar/cmt_lidar_voxel0075_cbgs.py) |L| 62.14% | 68.6%    | 15e+5e | 18.1 |  
 | [voxel0100_r50_800x320](./projects/configs/fusion/cmt_voxel0100_r50_800x320_cbgs.py)  |C+L| 67.9%     | 70.8%    | 15e+5e | 14.2 |
-| [voxel0075_vov_1600x640](./projects/configs/fusion/cmt_voxel0075_vov_1600x640_cbgs.py)  |C+L| 70.3% | 72.9%    | 15e+5e | 6.0 |
+| [voxel0075_vov_1600x640](./projects/configs/fusion/cmt_voxel0075_vov_1600x640_cbgs.py)  |C+L| 70.3% | 72.9%    | 15e+5e | 6.4 |
 
 Results on nuScenes **test set**. To reproduce our result, replace `ann_file=data_root + '/nuscenes_infos_train.pkl'` in [training config](./projects/configs/fusion/cmt_voxel0075_vov_1600x640_cbgs.py) with `ann_file=[data_root + '/nuscenes_infos_train.pkl', data_root + '/nuscenes_infos_val.pkl']`:
 
@@ -61,7 +59,7 @@ Results on nuScenes **test set**. To reproduce our result, replace `ann_file=dat
 |:--------:|:----------:|:---------:|:--------:|:--------:|:--------:|
 | [vov_1600x640](./projects/configs/camera/cmt_camera_vov_1600x640_cbgs.py) |C| 42.9% | 48.1%  | 20e | 8.4 |
 | [voxel0075](./projects/configs/lidar/cmt_lidar_voxel0075_cbgs.py) |L| 65.3% | 70.1%    | 15e+5e | 18.1 | 
-| [voxel0075_vov_1600x640](./projects/configs/fusion/cmt_voxel0075_vov_1600x640_cbgs.py)  |C+L| 72.0% | **74.1%**    | 15e+5e | 6.0 |
+| [voxel0075_vov_1600x640](./projects/configs/fusion/cmt_voxel0075_vov_1600x640_cbgs.py)  |C+L| 72.0% | **74.1%**    | 15e+5e | 6.4 |
 
 
 ## Citation
