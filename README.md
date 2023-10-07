@@ -44,7 +44,7 @@ bash tools/dist_test.sh /path_to_your_config /path_to_your_pth 8 --eval bbox
 
 
 ## Main Results
-Results on nuScenes **val set**. The default batch size is 2 on each GPU. The FPS are all evaluated with a single Tesla A100 GPU.
+Results on nuScenes **val set**. The default batch size is 2 on each GPU. The FPS are all evaluated with a single Tesla A100 GPU. (15e + 5e means the last 5 epochs should be trained without [GTsample](https://github.com/junjie18/CMT/blob/master/projects/configs/fusion/cmt_voxel0075_vov_1600x640_cbgs.py#L48-L87))
 
 | Config            |Modality| mAP      | NDS     | Schedule|Inference FPS|
 |:--------:|:----------:|:---------:|:--------:|:--------:|:--------:|
